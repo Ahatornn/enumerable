@@ -17,6 +17,23 @@ func TestAll(t *testing.T) {
 		}
 	})
 
+	t.Run("all elements satisfy predicate for non-comparable", func(t *testing.T) {
+
+		enumerator := FromSliceAny([][]int{
+			{3, 2},
+			{3, 4},
+			{3, 6},
+		})
+
+		result := enumerator.All(func(slice []int) bool {
+			return len(slice) > 0 && slice[0] == 3
+		})
+
+		if !result {
+			t.Error("Expected true when all elements satisfy predicate")
+		}
+	})
+
 	t.Run("not all elements satisfy predicate", func(t *testing.T) {
 		enumerator := FromSlice([]int{2, 4, 5, 8})
 

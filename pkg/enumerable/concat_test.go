@@ -31,6 +31,42 @@ func TestConcat(t *testing.T) {
 		}
 	})
 
+	t.Run("basic concatenation for non-comparable", func(t *testing.T) {
+		t.Parallel()
+
+		// Используем slices of slices (не comparable)
+		first := FromSliceAny([][]int{{1, 2}, {3, 4}})
+		second := FromSliceAny([][]int{{5, 6}, {7, 8}})
+
+		concatenated := first.Concat(second)
+
+		// Собираем результаты
+		actual := [][]int{}
+		concatenated(func(item []int) bool {
+			actual = append(actual, item)
+			return true
+		})
+
+		// Проверяем количество элементов
+		if len(actual) != 4 {
+			t.Fatalf("Expected 4 items, got %d", len(actual))
+		}
+
+		// Проверяем содержимое
+		expected := [][]int{{1, 2}, {3, 4}, {5, 6}, {7, 8}}
+		for i, expectedSlice := range expected {
+			if len(actual[i]) != len(expectedSlice) {
+				t.Errorf("Expected slice length %d at index %d, got %d", len(expectedSlice), i, len(actual[i]))
+				continue
+			}
+			for j, v := range expectedSlice {
+				if actual[i][j] != v {
+					t.Errorf("Expected %d at index [%d][%d], got %d", v, i, j, actual[i][j])
+				}
+			}
+		}
+	})
+
 	t.Run("concat with empty first", func(t *testing.T) {
 		t.Parallel()
 		first := FromSlice([]int{})
@@ -377,15 +413,25 @@ func BenchmarkConcat(b *testing.B) {
 			second[i] = i + 1000
 		}
 
-		firstEnum := FromSlice(first)
-		secondEnum := FromSlice(second)
+		b.ReportAllocs()
+		b.ResetTimer()
 
 		for i := 0; i < b.N; i++ {
+			firstEnum := FromSlice(first)
+			secondEnum := FromSlice(second)
+
 			concatenated := firstEnum.Concat(secondEnum)
+
+			var count int
 			concatenated(func(item int) bool {
-				_ = item
+				count++
 				return true
 			})
+
+			// Убеждаемся, что результат используется
+			if count != 2000 {
+				b.Fatalf("Expected 2000 items, got %d", count)
+			}
 		}
 	})
 }

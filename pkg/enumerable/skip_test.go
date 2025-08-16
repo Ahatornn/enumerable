@@ -30,6 +30,57 @@ func TestSkip(t *testing.T) {
 		}
 	})
 
+	t.Run("basic skip for non-comparable", func(t *testing.T) {
+		t.Parallel()
+
+		enumerator := FromSliceAny([][]int{
+			{1, 2},
+			{3, 4},
+			{5, 6},
+			{7, 8},
+			{9, 10},
+			{11, 12},
+			{13, 14},
+			{15, 16},
+		})
+
+		skipped := enumerator.Skip(3)
+
+		expected := [][]int{
+			{7, 8},
+			{9, 10},
+			{11, 12},
+			{13, 14},
+			{15, 16},
+		}
+		actual := [][]int{}
+
+		skipped(func(item []int) bool {
+			copy := make([]int, len(item))
+			for i, v := range item {
+				copy[i] = v
+			}
+			actual = append(actual, copy)
+			return true
+		})
+
+		if len(actual) != len(expected) {
+			t.Fatalf("Expected length %d, got %d", len(expected), len(actual))
+		}
+
+		for i, v := range expected {
+			if len(actual[i]) != len(v) {
+				t.Errorf("Expected slice length %d at index %d, got %d", len(v), i, len(actual[i]))
+				continue
+			}
+			for j, val := range v {
+				if actual[i][j] != val {
+					t.Errorf("Expected %d at index [%d][%d], got %d", val, i, j, actual[i][j])
+				}
+			}
+		}
+	})
+
 	t.Run("skip zero elements", func(t *testing.T) {
 		t.Parallel()
 		enumerator := FromSlice([]int{1, 2, 3, 4, 5})

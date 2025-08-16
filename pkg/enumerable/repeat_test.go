@@ -6,6 +6,7 @@ import (
 
 func TestRepeat(t *testing.T) {
 	t.Run("repeat integer", func(t *testing.T) {
+		t.Parallel()
 		enumerator := Repeat(42, 3)
 
 		expected := []int{42, 42, 42}
@@ -27,7 +28,38 @@ func TestRepeat(t *testing.T) {
 		}
 	})
 
+	t.Run("repeat map", func(t *testing.T) {
+		t.Parallel()
+		item := map[string]int{"key": 42}
+		enumerator := RepeatAny(item, 2)
+
+		actual := []map[string]int{}
+		enumerator(func(item map[string]int) bool {
+			copy := make(map[string]int)
+			for k, v := range item {
+				copy[k] = v
+			}
+			actual = append(actual, copy)
+			return true
+		})
+
+		if len(actual) != 2 {
+			t.Fatalf("Expected length 2, got %d", len(actual))
+		}
+
+		for i, m := range actual {
+			if len(m) != 1 {
+				t.Errorf("Expected map length 1 at index %d, got %d", i, len(m))
+				continue
+			}
+			if val, ok := m["key"]; !ok || val != 42 {
+				t.Errorf("Expected map[%s] = %d at index %d, got %v", "key", 42, i, m)
+			}
+		}
+	})
+
 	t.Run("repeat string", func(t *testing.T) {
+		t.Parallel()
 		enumerator := Repeat("hello", 4)
 
 		expected := []string{"hello", "hello", "hello", "hello"}
@@ -50,6 +82,7 @@ func TestRepeat(t *testing.T) {
 	})
 
 	t.Run("zero count", func(t *testing.T) {
+		t.Parallel()
 		enumerator := Repeat("test", 0)
 
 		count := 0
@@ -64,6 +97,7 @@ func TestRepeat(t *testing.T) {
 	})
 
 	t.Run("one count", func(t *testing.T) {
+		t.Parallel()
 		enumerator := Repeat(3.14, 1)
 
 		var result float64
@@ -85,6 +119,7 @@ func TestRepeat(t *testing.T) {
 	})
 
 	t.Run("early termination", func(t *testing.T) {
+		t.Parallel()
 		enumerator := Repeat("stop", 10)
 
 		actual := []string{}
@@ -106,6 +141,7 @@ func TestRepeat(t *testing.T) {
 	})
 
 	t.Run("repeat struct", func(t *testing.T) {
+		t.Parallel()
 		type Person struct {
 			Name string
 			Age  int
@@ -137,6 +173,7 @@ func TestRepeat(t *testing.T) {
 	})
 
 	t.Run("repeat boolean", func(t *testing.T) {
+		t.Parallel()
 		enumerator := Repeat(true, 5)
 
 		actual := []bool{}
@@ -160,6 +197,7 @@ func TestRepeat(t *testing.T) {
 
 func TestRepeatEdgeCases(t *testing.T) {
 	t.Run("negative count", func(t *testing.T) {
+		t.Parallel()
 		enumerator := Repeat(1, -1)
 
 		count := 0
@@ -174,6 +212,7 @@ func TestRepeatEdgeCases(t *testing.T) {
 	})
 
 	t.Run("repeat zero value", func(t *testing.T) {
+		t.Parallel()
 		enumerator := Repeat(0, 3)
 
 		actual := []int{}
@@ -195,6 +234,7 @@ func TestRepeatEdgeCases(t *testing.T) {
 	})
 
 	t.Run("repeat empty string", func(t *testing.T) {
+		t.Parallel()
 		enumerator := Repeat("", 2)
 
 		actual := []string{}

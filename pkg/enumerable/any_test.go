@@ -16,6 +16,36 @@ func TestAny(t *testing.T) {
 		}
 	})
 
+	t.Run("non-empty slice for non-comparable", func(t *testing.T) {
+		t.Parallel()
+
+		enumerator1 := FromSliceAny([][]int{{1, 2}, {3, 4}})
+		if !enumerator1.Any() {
+			t.Error("Expected true for non-empty slice of slices, got false")
+		}
+
+		enumerator2 := FromSliceAny([]map[string]int{{"key": 1}, {"key": 2}})
+		if !enumerator2.Any() {
+			t.Error("Expected true for non-empty slice of maps, got false")
+		}
+
+		enumerator3 := FromSliceAny([]func(){func() {}, func() {}})
+		if !enumerator3.Any() {
+			t.Error("Expected true for non-empty slice of functions, got false")
+		}
+
+		type Container struct {
+			Data []int
+			Fn   func()
+		}
+		enumerator4 := FromSliceAny([]Container{
+			{Data: []int{1, 2}, Fn: func() {}},
+		})
+		if !enumerator4.Any() {
+			t.Error("Expected true for non-empty slice of structs with non-comparable fields, got false")
+		}
+	})
+
 	t.Run("single element", func(t *testing.T) {
 		t.Parallel()
 		enumerator := FromSlice([]int{42})

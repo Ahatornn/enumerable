@@ -16,6 +16,24 @@ func TestLongCount(t *testing.T) {
 		}
 	})
 
+	t.Run("long count non-empty slice for non-comparable slice", func(t *testing.T) {
+		t.Parallel()
+
+		enumerator := FromSliceAny([][]int{
+			{1, 2},
+			{3, 4},
+			{5, 6},
+			{7, 8},
+			{9, 10},
+		})
+
+		count := enumerator.LongCount()
+
+		if count != 5 {
+			t.Errorf("Expected count 5, got %d", count)
+		}
+	})
+
 	t.Run("long count single element", func(t *testing.T) {
 		t.Parallel()
 		enumerator := FromSlice([]int{42})

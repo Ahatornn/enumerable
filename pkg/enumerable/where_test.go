@@ -30,6 +30,58 @@ func TestWhere(t *testing.T) {
 		}
 	})
 
+	t.Run("filter even numbers for non-comparable", func(t *testing.T) {
+		t.Parallel()
+
+		enumerator := FromSliceAny([][]int{
+			{1},
+			{2},
+			{3},
+			{4},
+			{5},
+			{6},
+			{7},
+			{8},
+		})
+
+		filtered := enumerator.Where(func(slice []int) bool {
+			return len(slice) > 0 && slice[0]%2 == 0
+		})
+
+		expected := [][]int{
+			{2},
+			{4},
+			{6},
+			{8},
+		}
+		actual := [][]int{}
+
+		filtered(func(item []int) bool {
+			copy := make([]int, len(item))
+			for i, v := range item {
+				copy[i] = v
+			}
+			actual = append(actual, copy)
+			return true
+		})
+
+		if len(actual) != len(expected) {
+			t.Fatalf("Expected length %d, got %d", len(expected), len(actual))
+		}
+
+		for i, v := range expected {
+			if len(actual[i]) != len(v) {
+				t.Errorf("Expected slice length %d at index %d, got %d", len(v), i, len(actual[i]))
+				continue
+			}
+			for j, val := range v {
+				if actual[i][j] != val {
+					t.Errorf("Expected %d at index [%d][%d], got %d", val, i, j, actual[i][j])
+				}
+			}
+		}
+	})
+
 	t.Run("filter odd numbers", func(t *testing.T) {
 		t.Parallel()
 		enumerator := FromSlice([]int{1, 2, 3, 4, 5, 6, 7, 8})
@@ -117,12 +169,15 @@ func TestWhere(t *testing.T) {
 	t.Run("nil enumerator", func(t *testing.T) {
 		t.Parallel()
 		var enumerator Enumerator[int] = nil
-
 		filtered := enumerator.Where(func(n int) bool { return n > 0 })
+		count := 0
+		filtered(func(item int) bool {
+			count++
+			return true
+		})
 
-		// Since Where returns nil for nil input, filtered should be nil
-		if filtered != nil {
-			t.Error("Expected nil result from Where on nil enumerator")
+		if count != 0 {
+			t.Errorf("Expected 0 elements from Where on nil enumerator, got %d", count)
 		}
 	})
 }

@@ -20,6 +20,30 @@ func TestFirstOrNil(t *testing.T) {
 		}
 	})
 
+	t.Run("first element from non-empty for non-comparable slice", func(t *testing.T) {
+		t.Parallel()
+
+		enumerator := FromSliceAny([][]int{
+			{1, 2},
+			{3, 4},
+			{5, 6},
+		})
+
+		result := enumerator.FirstOrNil()
+
+		if result == nil {
+			t.Fatal("Expected pointer to first element, got nil")
+		}
+
+		if len(*result) != 2 {
+			t.Errorf("Expected first element length 2, got %d", len(*result))
+		}
+
+		if (*result)[0] != 1 || (*result)[1] != 2 {
+			t.Errorf("Expected first element [1,2], got %v", *result)
+		}
+	})
+
 	t.Run("first element from single element slice", func(t *testing.T) {
 		t.Parallel()
 		enumerator := FromSlice([]int{42})

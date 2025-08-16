@@ -30,6 +30,54 @@ func TestTakeWhile(t *testing.T) {
 		}
 	})
 
+	t.Run("basic take while for non-comparable", func(t *testing.T) {
+		t.Parallel()
+		enumerator := FromSliceAny([][]int{
+			{1, 2},
+			{2, 3},
+			{3, 4, 5},
+			{4, 5},
+			{5, 6},
+			{1, 2},
+			{2, 3},
+		})
+
+		taken := enumerator.TakeWhile(func(slice []int) bool {
+			return len(slice) < 3
+		})
+
+		expected := [][]int{
+			{1, 2},
+			{2, 3},
+		}
+		actual := [][]int{}
+
+		taken(func(item []int) bool {
+			copy := make([]int, len(item))
+			for i, v := range item {
+				copy[i] = v
+			}
+			actual = append(actual, copy)
+			return true
+		})
+
+		if len(actual) != len(expected) {
+			t.Fatalf("Expected length %d, got %d", len(expected), len(actual))
+		}
+
+		for i, v := range expected {
+			if len(actual[i]) != len(v) {
+				t.Errorf("Expected slice length %d at index %d, got %d", len(v), i, len(actual[i]))
+				continue
+			}
+			for j, val := range v {
+				if actual[i][j] != val {
+					t.Errorf("Expected %d at index [%d][%d], got %d", val, i, j, actual[i][j])
+				}
+			}
+		}
+	})
+
 	t.Run("take while even numbers", func(t *testing.T) {
 		t.Parallel()
 		enumerator := FromSlice([]int{2, 4, 6, 7, 8, 10, 11, 12})

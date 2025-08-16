@@ -16,6 +16,28 @@ func TestLastOrDefault(t *testing.T) {
 		}
 	})
 
+	t.Run("last element from non-empty slice for non-comparable slice", func(t *testing.T) {
+		t.Parallel()
+
+		defaultSlice := []int{-1, -2}
+
+		enumerator := FromSliceAny([][]int{
+			{1, 2},
+			{3, 4},
+			{5, 6},
+		})
+
+		result := enumerator.LastOrDefault(defaultSlice)
+
+		if len(result) != 2 {
+			t.Errorf("Expected last element length 2, got %d", len(result))
+		}
+
+		if result[0] != 5 || result[1] != 6 {
+			t.Errorf("Expected last element [5,6], got %v", result)
+		}
+	})
+
 	t.Run("last element from single element slice", func(t *testing.T) {
 		t.Parallel()
 		enumerator := FromSlice([]int{42})

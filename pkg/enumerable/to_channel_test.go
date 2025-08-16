@@ -29,6 +29,52 @@ func TestToChannel(t *testing.T) {
 		}
 	})
 
+	t.Run("convert non-empty slice to channel for non-comparable", func(t *testing.T) {
+		t.Parallel()
+		enumerator := FromSliceAny([][]int{
+			{1, 2},
+			{3, 4},
+			{5, 6},
+			{7, 8},
+			{9, 10},
+		})
+
+		ch := enumerator.ToChannel(2)
+
+		var result [][]int
+		for item := range ch {
+			copy := make([]int, len(item))
+			for i, v := range item {
+				copy[i] = v
+			}
+			result = append(result, copy)
+		}
+
+		expected := [][]int{
+			{1, 2},
+			{3, 4},
+			{5, 6},
+			{7, 8},
+			{9, 10},
+		}
+
+		if len(result) != len(expected) {
+			t.Fatalf("Expected length %d, got %d", len(expected), len(result))
+		}
+
+		for i, v := range expected {
+			if len(result[i]) != len(v) {
+				t.Errorf("Expected slice length %d at index %d, got %d", len(v), i, len(result[i]))
+				continue
+			}
+			for j, val := range v {
+				if result[i][j] != val {
+					t.Errorf("Expected %d at index [%d][%d], got %d", val, i, j, result[i][j])
+				}
+			}
+		}
+	})
+
 	t.Run("convert single element to channel", func(t *testing.T) {
 		t.Parallel()
 		enumerator := FromSlice([]int{42})

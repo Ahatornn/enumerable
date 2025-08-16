@@ -16,6 +16,28 @@ func TestSumInt(t *testing.T) {
 		}
 	})
 
+	t.Run("sum simple integers for non-comparable", func(t *testing.T) {
+		t.Parallel()
+		enumerator := FromSliceAny([][]int{
+			{1},
+			{2},
+			{3},
+			{4},
+			{5},
+		})
+
+		sum := enumerator.SumInt(func(slice []int) int {
+			if len(slice) > 0 {
+				return slice[0]
+			}
+			return 0
+		})
+
+		if sum != 15 {
+			t.Errorf("Expected sum 15, got %d", sum)
+		}
+	})
+
 	t.Run("sum with transformation", func(t *testing.T) {
 		t.Parallel()
 		enumerator := FromSlice([]int{1, 2, 3, 4})

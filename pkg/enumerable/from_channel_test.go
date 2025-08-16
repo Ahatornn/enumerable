@@ -7,6 +7,7 @@ import (
 
 func TestFromChannel(t *testing.T) {
 	t.Run("basic channel enumeration", func(t *testing.T) {
+		t.Parallel()
 		ch := make(chan int, 3)
 		ch <- 1
 		ch <- 2
@@ -34,7 +35,43 @@ func TestFromChannel(t *testing.T) {
 		}
 	})
 
+	t.Run("basic channel enumeration for non-comparable slice", func(t *testing.T) {
+		t.Parallel()
+		ch := make(chan []int, 3)
+		ch <- []int{1, 2}
+		ch <- []int{3, 4}
+		ch <- []int{5, 6}
+		close(ch)
+
+		enumerator := FromChannelAny(ch)
+
+		expected := [][]int{{1, 2}, {3, 4}, {5, 6}}
+		actual := [][]int{}
+
+		enumerator(func(item []int) bool {
+			actual = append(actual, item)
+			return true
+		})
+
+		if len(actual) != len(expected) {
+			t.Fatalf("Expected length %d, got %d", len(expected), len(actual))
+		}
+
+		for i, v := range expected {
+			if len(actual[i]) != len(v) {
+				t.Errorf("Expected slice length %d at index %d, got %d", len(v), i, len(actual[i]))
+				continue
+			}
+			for j, val := range v {
+				if actual[i][j] != val {
+					t.Errorf("Expected %d at index [%d][%d], got %d", val, i, j, actual[i][j])
+				}
+			}
+		}
+	})
+
 	t.Run("empty channel", func(t *testing.T) {
+		t.Parallel()
 		ch := make(chan string)
 		close(ch)
 
@@ -52,6 +89,7 @@ func TestFromChannel(t *testing.T) {
 	})
 
 	t.Run("nil channel", func(t *testing.T) {
+		t.Parallel()
 		var ch chan int // nil channel
 
 		enumerator := FromChannel(ch)
@@ -68,6 +106,7 @@ func TestFromChannel(t *testing.T) {
 	})
 
 	t.Run("early termination", func(t *testing.T) {
+		t.Parallel()
 		ch := make(chan int, 5)
 		for i := 1; i <= 5; i++ {
 			ch <- i
@@ -79,7 +118,7 @@ func TestFromChannel(t *testing.T) {
 		actual := []int{}
 		enumerator(func(item int) bool {
 			actual = append(actual, item)
-			return len(actual) < 3 // Останавливаемся после 3 элементов
+			return len(actual) < 3
 		})
 
 		expected := []int{1, 2, 3}
@@ -95,6 +134,7 @@ func TestFromChannel(t *testing.T) {
 	})
 
 	t.Run("string channel", func(t *testing.T) {
+		t.Parallel()
 		ch := make(chan string, 2)
 		ch <- "hello"
 		ch <- "world"
@@ -123,14 +163,14 @@ func TestFromChannel(t *testing.T) {
 
 func TestFromChannelConcurrent(t *testing.T) {
 	t.Run("concurrent channel send", func(t *testing.T) {
+		t.Parallel()
 		ch := make(chan int)
 
-		// Горутина для отправки данных
 		go func() {
 			defer close(ch)
 			for i := 1; i <= 3; i++ {
 				ch <- i
-				time.Sleep(10 * time.Millisecond) // Небольшая задержка
+				time.Sleep(10 * time.Millisecond)
 			}
 		}()
 
@@ -155,6 +195,7 @@ func TestFromChannelConcurrent(t *testing.T) {
 	})
 
 	t.Run("channel closed during iteration", func(t *testing.T) {
+		t.Parallel()
 		ch := make(chan int, 10)
 		ch <- 1
 		ch <- 2
@@ -164,12 +205,12 @@ func TestFromChannelConcurrent(t *testing.T) {
 		actual := []int{}
 		go func() {
 			time.Sleep(50 * time.Millisecond)
-			close(ch) // Закрываем канал во время итерации
+			close(ch)
 		}()
 
 		enumerator(func(item int) bool {
 			actual = append(actual, item)
-			time.Sleep(20 * time.Millisecond) // Задержка между итерациями
+			time.Sleep(20 * time.Millisecond)
 			return true
 		})
 
@@ -181,6 +222,7 @@ func TestFromChannelConcurrent(t *testing.T) {
 
 func TestFromChannelStruct(t *testing.T) {
 	t.Run("struct channel", func(t *testing.T) {
+		t.Parallel()
 		type Person struct {
 			Name string
 			Age  int
@@ -218,6 +260,7 @@ func TestFromChannelStruct(t *testing.T) {
 
 func TestFromChannelEdgeCases(t *testing.T) {
 	t.Run("single item channel", func(t *testing.T) {
+		t.Parallel()
 		ch := make(chan int, 1)
 		ch <- 42
 		close(ch)
@@ -243,6 +286,7 @@ func TestFromChannelEdgeCases(t *testing.T) {
 	})
 
 	t.Run("boolean channel", func(t *testing.T) {
+		t.Parallel()
 		ch := make(chan bool, 3)
 		ch <- true
 		ch <- false

@@ -6,6 +6,7 @@ import (
 
 func TestRange(t *testing.T) {
 	t.Run("basic range", func(t *testing.T) {
+		t.Parallel()
 		enumerator := Range(1, 5)
 
 		expected := []int{1, 2, 3, 4, 5}
@@ -27,7 +28,31 @@ func TestRange(t *testing.T) {
 		}
 	})
 
+	t.Run("basic range for non-comparable slice", func(t *testing.T) {
+		t.Parallel()
+		enumerator := RangeAny(1, 5)
+
+		expected := []int{1, 2, 3, 4, 5}
+		actual := []int{}
+
+		enumerator(func(item int) bool {
+			actual = append(actual, item)
+			return true
+		})
+
+		if len(actual) != len(expected) {
+			t.Fatalf("Expected length %d, got %d", len(expected), len(actual))
+		}
+
+		for i, v := range expected {
+			if actual[i] != v {
+				t.Errorf("Expected %d at index %d, got %d", v, i, actual[i])
+			}
+		}
+	})
+
 	t.Run("zero start", func(t *testing.T) {
+		t.Parallel()
 		enumerator := Range(0, 3)
 
 		expected := []int{0, 1, 2}
@@ -50,6 +75,7 @@ func TestRange(t *testing.T) {
 	})
 
 	t.Run("negative start", func(t *testing.T) {
+		t.Parallel()
 		enumerator := Range(-2, 4)
 
 		expected := []int{-2, -1, 0, 1}
@@ -72,6 +98,7 @@ func TestRange(t *testing.T) {
 	})
 
 	t.Run("zero count", func(t *testing.T) {
+		t.Parallel()
 		enumerator := Range(5, 0)
 
 		count := 0
@@ -86,6 +113,7 @@ func TestRange(t *testing.T) {
 	})
 
 	t.Run("one count", func(t *testing.T) {
+		t.Parallel()
 		enumerator := Range(10, 1)
 
 		var result int
@@ -107,6 +135,7 @@ func TestRange(t *testing.T) {
 	})
 
 	t.Run("early termination", func(t *testing.T) {
+		t.Parallel()
 		enumerator := Range(100, 10)
 
 		actual := []int{}
@@ -128,6 +157,7 @@ func TestRange(t *testing.T) {
 	})
 
 	t.Run("large range", func(t *testing.T) {
+		t.Parallel()
 		enumerator := Range(1000, 100)
 
 		first := -1
@@ -159,6 +189,7 @@ func TestRange(t *testing.T) {
 
 func TestRangeEdgeCases(t *testing.T) {
 	t.Run("negative count", func(t *testing.T) {
+		t.Parallel()
 		enumerator := Range(5, -1)
 
 		count := 0
@@ -173,6 +204,7 @@ func TestRangeEdgeCases(t *testing.T) {
 	})
 
 	t.Run("start at boundary", func(t *testing.T) {
+		t.Parallel()
 		enumerator := Range(0, 0)
 
 		count := 0

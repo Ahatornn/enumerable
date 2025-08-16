@@ -27,6 +27,47 @@ func TestToSlice(t *testing.T) {
 		}
 	})
 
+	t.Run("convert non-empty slice for non-comparable", func(t *testing.T) {
+		t.Parallel()
+		enumerator := FromSliceAny([][]int{
+			{1, 2},
+			{3, 4},
+			{5, 6},
+			{7, 8},
+			{9, 10},
+		})
+
+		result := enumerator.ToSlice()
+
+		if result == nil {
+			t.Fatal("Expected slice, got nil")
+		}
+
+		expected := [][]int{
+			{1, 2},
+			{3, 4},
+			{5, 6},
+			{7, 8},
+			{9, 10},
+		}
+
+		if len(result) != len(expected) {
+			t.Fatalf("Expected length %d, got %d", len(expected), len(result))
+		}
+
+		for i, v := range expected {
+			if len(result[i]) != len(v) {
+				t.Errorf("Expected slice length %d at index %d, got %d", len(v), i, len(result[i]))
+				continue
+			}
+			for j, val := range v {
+				if result[i][j] != val {
+					t.Errorf("Expected %d at index [%d][%d], got %d", val, i, j, result[i][j])
+				}
+			}
+		}
+	})
+
 	t.Run("convert single element slice", func(t *testing.T) {
 		t.Parallel()
 		enumerator := FromSlice([]int{42})
@@ -67,8 +108,11 @@ func TestToSlice(t *testing.T) {
 
 		result := enumerator.ToSlice()
 
-		if result != nil {
-			t.Errorf("Expected nil for nil enumerator, got slice with length %d", len(result))
+		if result == nil {
+			t.Error("Expected empty slice for nil enumerator, got nil")
+		}
+		if len(result) != 0 {
+			t.Errorf("Expected empty slice for nil enumerator, got slice with length %d", len(result))
 		}
 	})
 

@@ -18,6 +18,29 @@ func TestSumFloat(t *testing.T) {
 		}
 	})
 
+	t.Run("sum simple float32 values for non-comparable", func(t *testing.T) {
+		t.Parallel()
+		enumerator := FromSliceAny([][]float32{
+			{1.1},
+			{2.2},
+			{3.3},
+			{4.4},
+			{5.5},
+		})
+
+		sum := enumerator.SumFloat(func(slice []float32) float32 {
+			if len(slice) > 0 {
+				return slice[0]
+			}
+			return 0
+		})
+
+		expected := float32(16.5)
+		if sum != expected {
+			t.Errorf("Expected sum %f, got %f", expected, sum)
+		}
+	})
+
 	t.Run("sum with transformation", func(t *testing.T) {
 		t.Parallel()
 		enumerator := FromSlice([]float32{1.0, 2.0, 3.0, 4.0})

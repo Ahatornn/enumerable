@@ -26,6 +26,39 @@ func TestForEach(t *testing.T) {
 		}
 	})
 
+	t.Run("for each element in non-empty slice for non-comparable slice", func(t *testing.T) {
+		t.Parallel()
+
+		// Используем slices of slices (не comparable)
+		enumerator := FromSliceAny([][]int{
+			{1, 2},
+			{3, 4},
+			{5, 6},
+		})
+
+		var results [][]int
+		enumerator.ForEach(func(slice []int) {
+			results = append(results, slice)
+		})
+
+		expected := [][]int{{1, 2}, {3, 4}, {5, 6}}
+		if len(results) != len(expected) {
+			t.Fatalf("Expected length %d, got %d", len(expected), len(results))
+		}
+
+		for i, v := range expected {
+			if len(results[i]) != len(v) {
+				t.Errorf("Expected slice length %d at index %d, got %d", len(v), i, len(results[i]))
+				continue
+			}
+			for j, val := range v {
+				if results[i][j] != val {
+					t.Errorf("Expected %d at index [%d][%d], got %d", val, i, j, results[i][j])
+				}
+			}
+		}
+	})
+
 	t.Run("for each element in single element slice", func(t *testing.T) {
 		t.Parallel()
 		enumerator := FromSlice([]int{42})
@@ -300,7 +333,6 @@ func BenchmarkForEach(b *testing.B) {
 
 		for i := 0; i < b.N; i++ {
 			enumerator.ForEach(func(n int) {
-				// Пустое действие для бенчмарка
 				_ = n
 			})
 		}
@@ -315,7 +347,6 @@ func BenchmarkForEach(b *testing.B) {
 
 		for i := 0; i < b.N; i++ {
 			enumerator.ForEach(func(n int) {
-				// Пустое действие для бенчмарка
 				_ = n
 			})
 		}
@@ -330,7 +361,6 @@ func BenchmarkForEach(b *testing.B) {
 
 		for i := 0; i < b.N; i++ {
 			enumerator.ForEach(func(n int) {
-				// Пустое действие для бенчмарка
 				_ = n
 			})
 		}
@@ -341,7 +371,6 @@ func BenchmarkForEach(b *testing.B) {
 
 		for i := 0; i < b.N; i++ {
 			enumerator.ForEach(func(n int) {
-				// Пустое действие для бенчмарка
 				_ = n
 			})
 		}

@@ -19,6 +19,20 @@ func TestEmpty(t *testing.T) {
 		}
 	})
 
+	t.Run("empty slice enumerator for non-comparable", func(t *testing.T) {
+		enumerator := EmptyAny[[]int]()
+
+		count := 0
+		enumerator(func(item []int) bool {
+			count++
+			return true
+		})
+
+		if count != 0 {
+			t.Errorf("Expected 0 items from empty enumerator, got %d", count)
+		}
+	})
+
 	t.Run("empty string enumerator", func(t *testing.T) {
 		enumerator := Empty[string]()
 

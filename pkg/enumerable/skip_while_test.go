@@ -30,6 +30,53 @@ func TestSkipWhile(t *testing.T) {
 		}
 	})
 
+	t.Run("basic skip while for non-comparable", func(t *testing.T) {
+		t.Parallel()
+
+		type Person struct {
+			Name string
+			Age  int
+		}
+
+		enumerator := FromSliceAny([]Person{
+			{Name: "Alice", Age: 25},
+			{Name: "Bob", Age: 30},
+			{Name: "Charlie", Age: 35},
+			{Name: "David", Age: 40},
+			{Name: "Eve", Age: 45},
+			{Name: "Frank", Age: 25},
+			{Name: "Grace", Age: 30},
+		})
+
+		skipped := enumerator.SkipWhile(func(p Person) bool {
+			return p.Age < 35
+		})
+
+		expected := []Person{
+			{Name: "Charlie", Age: 35},
+			{Name: "David", Age: 40},
+			{Name: "Eve", Age: 45},
+			{Name: "Frank", Age: 25},
+			{Name: "Grace", Age: 30},
+		}
+		actual := []Person{}
+
+		skipped(func(item Person) bool {
+			actual = append(actual, item)
+			return true
+		})
+
+		if len(actual) != len(expected) {
+			t.Fatalf("Expected length %d, got %d", len(expected), len(actual))
+		}
+
+		for i, v := range expected {
+			if actual[i].Name != v.Name || actual[i].Age != v.Age {
+				t.Errorf("Expected %+v at index %d, got %+v", v, i, actual[i])
+			}
+		}
+	})
+
 	t.Run("skip while even numbers", func(t *testing.T) {
 		t.Parallel()
 		enumerator := FromSlice([]int{2, 4, 6, 7, 8, 10, 11, 12})

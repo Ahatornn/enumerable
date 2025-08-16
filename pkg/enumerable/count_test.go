@@ -16,6 +16,24 @@ func TestCount(t *testing.T) {
 		}
 	})
 
+	t.Run("count non-empty slice for non-comparable", func(t *testing.T) {
+		t.Parallel()
+
+		enumerator := FromSliceAny([][]int{
+			{1, 2},
+			{3, 4},
+			{5, 6},
+			{7, 8},
+			{9, 10},
+		})
+
+		count := enumerator.Count()
+
+		if count != 5 {
+			t.Errorf("Expected count 5, got %d", count)
+		}
+	})
+
 	t.Run("count single element", func(t *testing.T) {
 		t.Parallel()
 		enumerator := FromSlice([]int{42})
@@ -252,10 +270,14 @@ func TestCountLargeEnumeration(t *testing.T) {
 func BenchmarkCount(b *testing.B) {
 	b.Run("small enumeration", func(b *testing.B) {
 		items := []int{1, 2, 3, 4, 5}
-		enumerator := FromSlice(items)
 
+		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			_ = enumerator.Count()
+			enumerator := FromSlice(items) // Создаем каждый раз заново
+			result := enumerator.Count()
+			if result != 5 {
+				b.Fatalf("Expected 5, got %d", result)
+			}
 		}
 	})
 
@@ -264,10 +286,15 @@ func BenchmarkCount(b *testing.B) {
 		for i := 0; i < 1000; i++ {
 			items[i] = i
 		}
-		enumerator := FromSlice(items)
 
+		b.ResetTimer()
+		b.ReportAllocs()
 		for i := 0; i < b.N; i++ {
-			_ = enumerator.Count()
+			enumerator := FromSlice(items)
+			result := enumerator.Count()
+			if result != 1000 {
+				b.Fatalf("Expected 1000, got %d", result)
+			}
 		}
 	})
 
@@ -276,18 +303,26 @@ func BenchmarkCount(b *testing.B) {
 		for i := 0; i < 10000; i++ {
 			items[i] = i
 		}
-		enumerator := FromSlice(items)
 
+		b.ResetTimer()
+		b.ReportAllocs()
 		for i := 0; i < b.N; i++ {
-			_ = enumerator.Count()
+			enumerator := FromSlice(items)
+			result := enumerator.Count()
+			if result != 10000 {
+				b.Fatalf("Expected 10000, got %d", result)
+			}
 		}
 	})
 
 	b.Run("empty enumeration", func(b *testing.B) {
-		enumerator := FromSlice([]int{})
-
+		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			_ = enumerator.Count()
+			enumerator := FromSlice([]int{})
+			result := enumerator.Count()
+			if result != 0 {
+				b.Fatalf("Expected 0, got %d", result)
+			}
 		}
 	})
 }
